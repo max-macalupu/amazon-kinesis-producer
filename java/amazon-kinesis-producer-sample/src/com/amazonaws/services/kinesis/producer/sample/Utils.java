@@ -15,10 +15,17 @@
 
 package com.amazonaws.services.kinesis.producer.sample;
 
+import com.amazonaws.services.kinesis.producer.sample.record.StreamAlert;
+import com.amazonaws.services.kinesis.producer.sample.record.StreamAlertBody;
+import com.amazonaws.services.kinesis.producer.sample.record.StreamAlertHeader;
+import com.google.gson.Gson;
+
 import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
+import java.util.Date;
 import java.util.Random;
+import java.util.UUID;
 
 public class Utils {
     private static final Random RANDOM = new Random();
@@ -45,15 +52,40 @@ public class Utils {
      */
     public static ByteBuffer generateData(long sequenceNumber, int totalLen) {
         StringBuilder sb = new StringBuilder();
-        sb.append(Long.toString(sequenceNumber));
-        sb.append(" ");
-        while (sb.length() < totalLen) {
-            sb.append("a");
-        }
+        sb.append(new Gson().toJson(getStreamAlert()));
+        System.out.println(sb.toString());
+//        sb.append(Long.toString(sequenceNumber));
+//        sb.append(" ");
+//        while (sb.length() < totalLen) {
+//            sb.append("mx");
+//        }
         try {
             return ByteBuffer.wrap(sb.toString().getBytes("UTF-8"));
         } catch (UnsupportedEncodingException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    private static StreamAlert getStreamAlert() {
+        StreamAlertBody alertBody = new StreamAlertBody();
+        alertBody.setAlertId(UUID.randomUUID().toString());
+        alertBody.setAlertTime(new Date().toString());
+        alertBody.setCategory("CATEGORY_01");
+        alertBody.setSubCategory("SUB_CATEGORY_01");
+        alertBody.setSubscriberId(UUID.randomUUID().toString());
+
+        StreamAlertHeader alertHeader = new StreamAlertHeader();
+        alertHeader.setEnvironment("DEV");
+        alertHeader.setHostId("127.0.0.1");
+        alertHeader.setRequestType("REQUEST_TYPE");
+        alertHeader.setRequestId(UUID.randomUUID().toString());
+        alertHeader.setSourceApp("test");
+        alertHeader.setTime(new Date().toString());
+
+        StreamAlert streamAlert = new StreamAlert();
+        streamAlert.setBody(alertBody);
+        streamAlert.setHeader(alertHeader);
+
+        return streamAlert;
     }
 }

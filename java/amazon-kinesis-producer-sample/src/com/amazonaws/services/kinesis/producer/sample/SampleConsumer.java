@@ -116,7 +116,14 @@ public class SampleConsumer implements IRecordProcessorFactory {
                 try {
                     byte[] b = new byte[r.getData().remaining()];
                     r.getData().get(b);
-                    seqNos.add(Long.parseLong(new String(b, "UTF-8").split(" ")[0]));
+                    String data = new String(b, "UTF-8").split(" ")[0];
+                    if (!data.equalsIgnoreCase("testData")) {
+                        try {
+                            seqNos.add(Long.parseLong(data));
+                        } catch(NumberFormatException ex ) {
+                            log.info("error parsing de log");
+                        }
+                    }
                 } catch (Exception e) {
                     log.error("Error parsing record", e);
                     System.exit(1);
@@ -202,9 +209,8 @@ public class SampleConsumer implements IRecordProcessorFactory {
                         "KinesisProducerLibSampleConsumer")
                                 .withRegionName(SampleProducer.REGION)
                                 .withInitialPositionInStream(InitialPositionInStream.TRIM_HORIZON);
-        
         final SampleConsumer consumer = new SampleConsumer();
-        
+
         Executors.newScheduledThreadPool(1).scheduleAtFixedRate(new Runnable() {
             @Override
             public void run() {
